@@ -52,7 +52,7 @@ jobs:
           BASE_VERSION: ${{ needs.setup.outputs.product-base-version }}
           PRERELEASE_VERSION: ${{ needs.setup.outputs.product-prerelease-version}}
         with:
-          bin_name: "terraform-provider-fyre_v${{ needs.setup.outputs.product-version }}"
+          bin_name: "terraform-provider-fyre_v${{ needs.setup.outputs.product-version }}_${{ matrix.goos }}_${{ matrix.goarch }}"
           product_name: terraform-provider-fyre
           product_version: ${{ needs.setup.outputs.product-version }}
           go_version: ${{ needs.setup.outputs.go-version }}
@@ -92,13 +92,15 @@ jobs:
           path: dist
           pattern: terraform-provider-fyre_*
           merge-multiple: true
-      - name: unzip
+      - name: prepare dist
         run: |
           pushd dist
           ls -al
-          unzip ./*.zip
-          rm -f ./*.zip
-          chmod +x .
+          unzip -of \*.zip
+          rm -rf ./*.zip.json
+          rm -rf ./*.zip
+          chmod +x ./*
+          ls -al
       - name: Import gpg key
         uses: crazy-max/ghaction-import-gpg@2dc316deee8e90f13e1a351ab510b4d5bc0c82cd # v7.0.0
         with:
