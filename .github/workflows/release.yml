@@ -97,7 +97,7 @@ jobs:
           rm -rf ./*.zip.json
           rm -rf ./*.zip
           rm LICENSE.txt
-          chmod +x *
+          chmod +x ./*
           ls -al
       - name: Import gpg key
         uses: crazy-max/ghaction-import-gpg@2dc316deee8e90f13e1a351ab510b4d5bc0c82cd # v7.0.0
