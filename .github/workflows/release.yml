@@ -61,7 +61,6 @@ jobs:
               -o "$BIN_PATH" \
               -trimpath \
               -buildvcs=false \
-              -ldflags "-s -w -X 'main.version=${{ needs.setup.outputs.product-version }}'"
             cp LICENSE "$TARGET_DIR/LICENSE.txt"
 
   release:
@@ -119,5 +118,5 @@ jobs:
             --dist ../dist \
             --gpg-key-id "${{ secrets.GPG_KEY_ID }}" \
             --commit "${{ inputs.sha }}" \
-            --version "v$(cat ../version/VERSION)" \
+            --version "$(cat ../version/VERSION)" \
             --manifest-path ../terraform-registry-manifest.json
