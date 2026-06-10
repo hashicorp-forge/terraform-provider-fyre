@@ -18,7 +18,7 @@ jobs:
       product-prerelease-version: ${{ steps.set-product-version.outputs.prerelease-product-version }}
       product-minor-version: ${{ steps.set-product-version.outputs.minor-product-version }}
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
       - id: set-up-go
         uses: actions/setup-go@4a3601121dd01d1626a1e23e37211e3254c1c06c # v6.4.0
         with:
@@ -42,8 +42,8 @@ jobs:
           - arm64
     name: build ${{ matrix.goos }}/${{ matrix.goarch }}
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-      - uses: hashicorp/actions-go-build@b9e2cfba3013adccdc112b01cba922d83c78fac5 # v1.1.1
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+      - uses: hashicorp/actions-go-build@dd7ca5a30c402c933e1fe61e0ff7165e5c4ee9e4 # v1.1.2
         env:
           CGO_ENABLED: 0
           BASE_VERSION: ${{ needs.setup.outputs.product-base-version }}
@@ -69,13 +69,13 @@ jobs:
       - build
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           ref: ${{ inputs.sha }}   # checkout out our sha to get the version
       # Check out the enos-provider repository so we can use it's machinery
       # to publish the provider until it's available in the generic pipeline
       # tooling.
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           repository: "hashicorp-forge/terraform-provider-enos"
           path: enos-provider
