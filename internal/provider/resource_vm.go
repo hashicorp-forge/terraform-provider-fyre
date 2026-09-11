@@ -235,25 +235,21 @@ func (r *ResourceVM) Schema(ctx context.Context, req resource.SchemaRequest, res
 				Computed:            true,
 			},
 			"ips": schema.ListNestedAttribute{
-				MarkdownDescription: "List of IP addresses assigned to the VM",
+				MarkdownDescription: "List of IP addresses assigned to the VM. These are assigned by the Fyre API and cannot be set by the user.",
 				Computed:            true,
-				Optional:            true,
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
 						"ip": schema.StringAttribute{
 							MarkdownDescription: "IP address",
 							Computed:            true,
-							Optional:            true,
 						},
 						"type": schema.StringAttribute{
 							MarkdownDescription: "IP type (private or public)",
 							Computed:            true,
-							Optional:            true,
 						},
 						"scope": schema.StringAttribute{
 							MarkdownDescription: "IP scope",
 							Computed:            true,
-							Optional:            true,
 						},
 					},
 				},

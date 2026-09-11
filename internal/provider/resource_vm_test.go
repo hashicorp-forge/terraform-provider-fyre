@@ -49,6 +49,17 @@ func TestAccResourceVM(t *testing.T) {
 						resource.TestCheckResourceAttrSet("fyre_vm.test", "expiration_time"),
 						resource.TestCheckResourceAttrSet("fyre_vm.test", "ips.#"),
 						resource.TestCheckResourceAttrSet("fyre_vm.test", "ips.0.ip"),
+						resource.TestCheckResourceAttrSet("fyre_vm.test", "ips.0.type"),
+						resource.TestCheckResourceAttrSet("fyre_vm.test", "ips.0.scope"),
+					),
+				},
+				// Verify ips is stable — no diff after create (Computed-only, no user values)
+				{
+					Config:   testAccResourceVMConfigBasic("RedHat 9.6", 2, 4, "Test VM for Terraform acceptance testing", "24", "n", productGroupID),
+					PlanOnly: true,
+					Check: resource.ComposeAggregateTestCheckFunc(
+						resource.TestCheckResourceAttrSet("fyre_vm.test", "ips.#"),
+						resource.TestCheckResourceAttrSet("fyre_vm.test", "ips.0.ip"),
 					),
 				},
 				// Update CPU and Memory
@@ -203,6 +214,47 @@ func TestAccResourceVM(t *testing.T) {
 				},
 			},
 		})
+	})
+}
+
+// TestUnitResourceVM_IPsReadOnly verifies that the ips attribute rejects
+// user-supplied values at plan time (no API credentials required).
+//
+// ips was declared Optional+Computed, allowing users to set IP values
+// that the Fyre API silently ignores. This caused "Provider produced
+// inconsistent result after apply" and left the resource tainted.
+// ips is now Computed-only — the framework rejects the config before
+// any API call is made.
+func TestUnitResourceVM_IPsReadOnly(t *testing.T) {
+	resource.UnitTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: `
+provider "fyre" {
+  site = "svl"
+}
+
+resource "fyre_vm" "test_ips" {
+  os             = "CentOS Stream 9"
+  platform       = "x"
+  cpu            = 2
+  memory         = 4
+  expiration     = "4"
+  disable_delete = "n"
+
+  ips = [
+    {
+      ip    = "192.0.2.1"
+      type  = "public"
+      scope = "external"
+    }
+  ]
+}
+`,
+				ExpectError: regexp.MustCompile(`Invalid Configuration for Read-Only Attribute`),
+			},
+		},
 	})
 }
 
