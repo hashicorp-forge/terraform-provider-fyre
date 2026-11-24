@@ -614,51 +614,12 @@ func (d *DataSourceVMDetails) Read(ctx context.Context, req datasource.ReadReque
 	}
 
 	// Map IPs list
-	if vmDetails.Ips != nil && len(*vmDetails.Ips) > 0 {
-		ipElements := make([]attr.Value, 0, len(*vmDetails.Ips))
-		ipAttrTypes := map[string]attr.Type{
-			"ip":    types.StringType,
-			"type":  types.StringType,
-			"scope": types.StringType,
-		}
-
-		for _, ip := range *vmDetails.Ips {
-			ipAttrs := map[string]attr.Value{
-				"ip":    types.StringNull(),
-				"type":  types.StringNull(),
-				"scope": types.StringNull(),
-			}
-
-			if ip.Ip != nil {
-				ipAttrs["ip"] = types.StringValue(*ip.Ip)
-			}
-			if ip.Type != nil {
-				ipAttrs["type"] = types.StringValue(*ip.Type)
-			}
-			if ip.Scope != nil {
-				ipAttrs["scope"] = types.StringValue(*ip.Scope)
-			}
-
-			ipObj, diags := types.ObjectValue(ipAttrTypes, ipAttrs)
-			resp.Diagnostics.Append(diags...)
-			if resp.Diagnostics.HasError() {
-				return
-			}
-			ipElements = append(ipElements, ipObj)
-		}
-
-		ipsList, diags := types.ListValue(types.ObjectType{AttrTypes: ipAttrTypes}, ipElements)
-		resp.Diagnostics.Append(diags...)
-		if !resp.Diagnostics.HasError() {
-			data.IPs = ipsList
-		}
-	} else {
-		data.IPs = types.ListNull(types.ObjectType{AttrTypes: map[string]attr.Type{
-			"ip":    types.StringType,
-			"type":  types.StringType,
-			"scope": types.StringType,
-		}})
+	ipsList, diags := mapVMIPsToList(vmDetails)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
 	}
+	data.IPs = ipsList
 
 	// Extract first IP if available for the ip field
 	if vmDetails.Ips != nil && len(*vmDetails.Ips) > 0 {

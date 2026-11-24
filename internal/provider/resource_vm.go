@@ -650,61 +650,12 @@ func (r *ResourceVM) Create(ctx context.Context, req resource.CreateRequest, res
 	}
 
 	// Map IPs from API response
-	if vmDetails.Ips != nil && len(*vmDetails.Ips) > 0 {
-		ipElements := make([]attr.Value, 0, len(*vmDetails.Ips))
-		for _, ip := range *vmDetails.Ips {
-			ipAttrs := map[string]attr.Value{
-				"ip":    types.StringNull(),
-				"type":  types.StringNull(),
-				"scope": types.StringNull(),
-			}
-			if ip.Ip != nil {
-				ipAttrs["ip"] = types.StringValue(*ip.Ip)
-			}
-			if ip.Type != nil {
-				ipAttrs["type"] = types.StringValue(*ip.Type)
-			}
-			if ip.Scope != nil {
-				ipAttrs["scope"] = types.StringValue(*ip.Scope)
-			}
-			ipObj, diags := types.ObjectValue(
-				map[string]attr.Type{
-					"ip":    types.StringType,
-					"type":  types.StringType,
-					"scope": types.StringType,
-				},
-				ipAttrs,
-			)
-			resp.Diagnostics.Append(diags...)
-			if resp.Diagnostics.HasError() {
-				return
-			}
-			ipElements = append(ipElements, ipObj)
-		}
-		ipsList, diags := types.ListValue(
-			types.ObjectType{
-				AttrTypes: map[string]attr.Type{
-					"ip":    types.StringType,
-					"type":  types.StringType,
-					"scope": types.StringType,
-				},
-			},
-			ipElements,
-		)
-		resp.Diagnostics.Append(diags...)
-		if !resp.Diagnostics.HasError() {
-			data.IPs = ipsList
-		}
-	} else {
-		data.IPs = types.ListNull(types.ObjectType{
-			AttrTypes: map[string]attr.Type{
-				"ip":    types.StringType,
-				"type":  types.StringType,
-				"scope": types.StringType,
-			},
-		})
+	ipsList, diags := mapVMIPsToList(vmDetails)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
 	}
-
+	data.IPs = ipsList
 	tflog.Trace(ctx, "created VM resource")
 
 	// Save data into Terraform state
@@ -882,60 +833,12 @@ func (r *ResourceVM) Read(ctx context.Context, req resource.ReadRequest, resp *r
 	}
 
 	// Map IPs from API response
-	if vmDetails.Ips != nil && len(*vmDetails.Ips) > 0 {
-		ipElements := make([]attr.Value, 0, len(*vmDetails.Ips))
-		for _, ip := range *vmDetails.Ips {
-			ipAttrs := map[string]attr.Value{
-				"ip":    types.StringNull(),
-				"type":  types.StringNull(),
-				"scope": types.StringNull(),
-			}
-			if ip.Ip != nil {
-				ipAttrs["ip"] = types.StringValue(*ip.Ip)
-			}
-			if ip.Type != nil {
-				ipAttrs["type"] = types.StringValue(*ip.Type)
-			}
-			if ip.Scope != nil {
-				ipAttrs["scope"] = types.StringValue(*ip.Scope)
-			}
-			ipObj, diags := types.ObjectValue(
-				map[string]attr.Type{
-					"ip":    types.StringType,
-					"type":  types.StringType,
-					"scope": types.StringType,
-				},
-				ipAttrs,
-			)
-			resp.Diagnostics.Append(diags...)
-			if resp.Diagnostics.HasError() {
-				return
-			}
-			ipElements = append(ipElements, ipObj)
-		}
-		ipsList, diags := types.ListValue(
-			types.ObjectType{
-				AttrTypes: map[string]attr.Type{
-					"ip":    types.StringType,
-					"type":  types.StringType,
-					"scope": types.StringType,
-				},
-			},
-			ipElements,
-		)
-		resp.Diagnostics.Append(diags...)
-		if !resp.Diagnostics.HasError() {
-			data.IPs = ipsList
-		}
-	} else {
-		data.IPs = types.ListNull(types.ObjectType{
-			AttrTypes: map[string]attr.Type{
-				"ip":    types.StringType,
-				"type":  types.StringType,
-				"scope": types.StringType,
-			},
-		})
+	ipsList, diags := mapVMIPsToList(vmDetails)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
 	}
+	data.IPs = ipsList
 
 	tflog.Trace(ctx, "read VM resource")
 
@@ -1454,58 +1357,14 @@ func (r *ResourceVM) Update(ctx context.Context, req resource.UpdateRequest, res
 
 	// Map IPs from API response
 	if vmDetails.Ips != nil && len(*vmDetails.Ips) > 0 {
-		ipElements := make([]attr.Value, 0, len(*vmDetails.Ips))
-		for _, ip := range *vmDetails.Ips {
-			ipAttrs := map[string]attr.Value{
-				"ip":    types.StringNull(),
-				"type":  types.StringNull(),
-				"scope": types.StringNull(),
-			}
-			if ip.Ip != nil {
-				ipAttrs["ip"] = types.StringValue(*ip.Ip)
-			}
-			if ip.Type != nil {
-				ipAttrs["type"] = types.StringValue(*ip.Type)
-			}
-			if ip.Scope != nil {
-				ipAttrs["scope"] = types.StringValue(*ip.Scope)
-			}
-			ipObj, diags := types.ObjectValue(
-				map[string]attr.Type{
-					"ip":    types.StringType,
-					"type":  types.StringType,
-					"scope": types.StringType,
-				},
-				ipAttrs,
-			)
-			resp.Diagnostics.Append(diags...)
-			if resp.Diagnostics.HasError() {
-				return
-			}
-			ipElements = append(ipElements, ipObj)
-		}
-		ipsList, diags := types.ListValue(
-			types.ObjectType{
-				AttrTypes: map[string]attr.Type{
-					"ip":    types.StringType,
-					"type":  types.StringType,
-					"scope": types.StringType,
-				},
-			},
-			ipElements,
-		)
+		ipsList, diags := mapVMIPsToList(vmDetails)
 		resp.Diagnostics.Append(diags...)
-		if !resp.Diagnostics.HasError() {
-			plan.IPs = ipsList
+		if resp.Diagnostics.HasError() {
+			return
 		}
+		plan.IPs = ipsList
 	} else if plan.IPs.IsUnknown() {
-		plan.IPs = types.ListNull(types.ObjectType{
-			AttrTypes: map[string]attr.Type{
-				"ip":    types.StringType,
-				"type":  types.StringType,
-				"scope": types.StringType,
-			},
-		})
+		plan.IPs = types.ListNull(ipObjectType)
 	}
 
 	// Save updated data into Terraform state
