@@ -4,6 +4,7 @@
 package provider
 
 import (
+	"context"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -13,11 +14,13 @@ import (
 )
 
 func TestMapVMIPsToList(t *testing.T) {
+	ctx := context.Background()
+
 	t.Run("nil vmDetails returns null list", func(t *testing.T) {
 		list, diags := mapVMIPsToList(nil)
 		require.False(t, diags.HasError())
 		require.True(t, list.IsNull())
-		require.Equal(t, ipObjectType, list.ElementType(nil))
+		require.Equal(t, ipObjectType, list.ElementType(ctx))
 	})
 
 	t.Run("nil Ips slice returns null list", func(t *testing.T) {
@@ -27,7 +30,7 @@ func TestMapVMIPsToList(t *testing.T) {
 		list, diags := mapVMIPsToList(vmDetails)
 		require.False(t, diags.HasError())
 		require.True(t, list.IsNull())
-		require.Equal(t, ipObjectType, list.ElementType(nil))
+		require.Equal(t, ipObjectType, list.ElementType(ctx))
 	})
 
 	t.Run("empty Ips slice returns null list", func(t *testing.T) {
@@ -42,7 +45,7 @@ func TestMapVMIPsToList(t *testing.T) {
 		list, diags := mapVMIPsToList(vmDetails)
 		require.False(t, diags.HasError())
 		require.True(t, list.IsNull())
-		require.Equal(t, ipObjectType, list.ElementType(nil))
+		require.Equal(t, ipObjectType, list.ElementType(ctx))
 	})
 
 	t.Run("populated Ips with full attributes", func(t *testing.T) {
